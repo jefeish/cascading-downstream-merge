@@ -351,7 +351,8 @@ function isBiggerThan(v1, v2) {
  * @param vStr
  */
 function semanticVersionToArray(vStr) {
-  const preRelease = new Map<string, number> ()
+  // creating a 'lookup' table for the semantic versioning, to translate the 'release-name' to a number
+  const preRelease = new Map()
   preRelease.set('alpha', 1)
   preRelease.set('beta', 2)
   preRelease.set('rc', 3)
