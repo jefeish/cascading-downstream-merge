@@ -20,8 +20,9 @@ const github = require('@actions/github');
         console.log(' owner: ' + owner + '\n repo: ' + repo)
         console.log('GITHUB_TOKEN: ' + token)
         console.log(checkMergability(1, 2))
-        console.log(getPullRequest(1, owner, repo, octokit))
-        
+        const res = await getPullRequest(1, owner, repo, octokit)
+        console.log(res)
+
         // cascadingBranchMerge(
         //     prefixes,
         //     refBranch,
