@@ -1,4 +1,5 @@
-require ('./cascading-branch-merge')
+require('./utilities')
+require('./cascading-branch-merge')
 
 /**
  * @description Entrypoint
@@ -15,6 +16,7 @@ require ('./cascading-branch-merge')
 
         console.log(' owner: ' + owner + '\n repo: ' + repo)
         console.log('GITHUB_TOKEN: ' + token)
+        console.log(checkMergability(1, 2))
 
         // cascadingBranchMerge(
         //     prefixes,
