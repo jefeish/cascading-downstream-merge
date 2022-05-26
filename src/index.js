@@ -1,5 +1,8 @@
-require('./utilities')
-require('./cascading-branch-merge')
+const { checkMergability } = require('./utilities')
+const { cascadingBranchMerge } = require('./cascading-branch-merge')
+
+const core = require('@actions/core');
+const github = require('@actions/github');
 
 /**
  * @description Entrypoint
