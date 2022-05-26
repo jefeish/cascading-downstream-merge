@@ -370,11 +370,11 @@ function semanticVersionToArray(vStr) {
         // short version number - 1.1-rc
         av.splice(index, 1, parseInt(vTemp[0], 10))
         av.splice(index + 1, 1, 0)
-        av.splice(index + 2, 0, preRelease.get(vTemp[1])!)
+        av.splice(index + 2, 0, preRelease.get(vTemp[1]))
       } else {
         // full version number - 1.1.0-rc
         av.splice(index, 1, parseInt(vTemp[0], 10))
-        av.splice(index + 1, 0, preRelease.get(vTemp[1])!)
+        av.splice(index + 1, 0, preRelease.get(vTemp[1]))
       }
     } else {
       av.push(parseInt(v))
