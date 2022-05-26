@@ -44,7 +44,7 @@ let branch = {
  * @param repository
  * @param context
  */
-export async function cascadingBranchMerge(
+async function cascadingBranchMerge(
     prefixes,
     refBranch,
     headBranch,
@@ -386,3 +386,6 @@ function semanticVersionToArray(vStr) {
   // [1,1,0,3,1]
   return av
 }
+
+
+module.exports = cascadingMerge
