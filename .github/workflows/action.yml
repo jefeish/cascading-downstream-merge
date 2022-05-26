@@ -12,6 +12,9 @@ jobs:
       - name: Run a one-line script
         run: echo Hello from Octo Organization
         
+      - run: npm install @octokit/action
+      - run: npm install @actions/github
+      - run: npm install @actions/core  
       # Run the local action code
       - uses: ./
       - name: Run a one-line script
