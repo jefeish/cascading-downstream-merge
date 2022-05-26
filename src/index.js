@@ -1,4 +1,4 @@
-import { cascadingBranchMerge } from './cascading-branch-merge';
+require ('./cascading-branch-merge')
 
 /**
  * @description Entrypoint
