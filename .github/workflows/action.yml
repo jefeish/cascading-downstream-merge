@@ -1,12 +1,19 @@
 ---
+
 name: GitHub Actions Demo
 
-on: workflow_dispatch
-    inputs:
-      template:
-        type: string
-        description: template (.github/PROJECT_TEMPLATES/)
-        required: true
+on:
+  workflow_dispatch:
+      inputs:
+        prefixes:
+          type: string
+          description: "List of prefixes to match"
+          required: true
+
+        refBranch:
+          type: string
+          description: branch to use for the template
+          required: true
 
 jobs:
   merge:
@@ -25,3 +32,5 @@ jobs:
       - uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          prefixes: ${{ github.event.inputs.prefixes }}
+          refBranch: ${{ github.event.inputs.refBranch }}
