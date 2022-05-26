@@ -1,6 +1,6 @@
 
 function checkMergability(a, b) {
-  return a.merge(b) === a;
+  return a+b;
 }
 
 module.exports = {
