@@ -1,6 +1,12 @@
+---
 name: GitHub Actions Demo
 
 on: workflow_dispatch
+    inputs:
+      template:
+        type: string
+        description: template (.github/PROJECT_TEMPLATES/)
+        required: true
 
 jobs:
   merge:
