@@ -1,0 +1,18 @@
+name: GitHub Actions Demo
+
+on: workflow_dispatch
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run a one-line script
+        run: echo Hello from Octo Organization
+        
+      # Run the local action code
+      - uses: ./
+      - name: Run a one-line script
+        run: echo invoking ascading-downstream-merge
