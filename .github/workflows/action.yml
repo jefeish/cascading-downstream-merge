@@ -17,5 +17,6 @@ jobs:
       - run: npm install @actions/core  
       # Run the local action code
       - uses: ./
-      - name: Run a one-line script
-        run: echo invoking ascading-downstream-merge
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo invoking cascading-downstream-merge
