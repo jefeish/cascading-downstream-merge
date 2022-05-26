@@ -1,4 +1,4 @@
-const { checkMergability } = require('./utilities')
+const { checkMergability, getPullRequest } = require('./utilities')
 const { cascadingBranchMerge } = require('./cascading-branch-merge')
 
 const core = require('@actions/core');
@@ -20,7 +20,8 @@ const github = require('@actions/github');
         console.log(' owner: ' + owner + '\n repo: ' + repo)
         console.log('GITHUB_TOKEN: ' + token)
         console.log(checkMergability(1, 2))
-
+        console.log(getPullRequest(1, owner, repo, octokit))
+        
         // cascadingBranchMerge(
         //     prefixes,
         //     refBranch,
