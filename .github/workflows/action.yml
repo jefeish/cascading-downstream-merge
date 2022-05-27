@@ -7,7 +7,7 @@ on:
       inputs:
         prefixes:
           type: string
-          description: "List of prefixes to match"
+          description: List of prefixes to match
           required: true
 
         refBranch:
