@@ -29,10 +29,7 @@ const github = require('@actions/github');
         console.log('pullNumber: ' + pullNumber)
         console.log('headBranch: ' + headBranch)
         console.log('baseBranch: ' + baseBranch)
-        console.log('mergeable: ' + context.payload.pull_request.mergeable)
-        console.log('mergeable_state: ' + context.payload.pull_request.mergeable_state)
 
-        console.log(checkMergability(1, 2))
         console.log(context)
         const res = await getPullRequest(pullNumber, owner, repo, octokit)
         console.log('res: ')
