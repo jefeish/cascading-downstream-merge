@@ -36,6 +36,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # prefixes: ${{ github.event.inputs.prefixes }}
           # refBranch: ${{ github.event.inputs.refBranch }}
-          prefixes: 
-            - feature
+          prefixes: feature
           refBranch: default
