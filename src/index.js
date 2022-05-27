@@ -38,7 +38,7 @@ const github = require('@actions/github');
         console.log('mergeable_state: '+ res.data.mergeable_state)
 
         cascadingBranchMerge(
-            prefixes,        // array of prefixes
+            [prefixes],        // array of prefixes
             refBranch,
             headBranch,
             baseBranch,
