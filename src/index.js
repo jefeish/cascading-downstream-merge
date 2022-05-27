@@ -36,14 +36,18 @@ const github = require('@actions/github');
         console.log(res)
         console.log('mergeable: '+ res.data.mergeable)
         console.log('mergeable_state: '+ res.data.mergeable_state)
-
+        const repository = {
+            "owner": owner,
+            "repo": repo
+        }
+        
         cascadingBranchMerge(
             [prefixes],        // array of prefixes
             refBranch,
             headBranch,
             baseBranch,
             owner,
-            repo,
+            repository,
             octokit,
             pullNumber
         )
