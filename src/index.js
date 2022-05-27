@@ -47,7 +47,7 @@ const github = require('@actions/github');
             baseBranch,
             owner,
             repo,
-            context,
+            octokit,
             pullNumber
         )
         
