@@ -55,7 +55,7 @@ async function cascadingBranchMerge(
     pullNumber
 ) {
   const tempRequestObject = { owner, repo, per_page: 100 } 
-  const branches = (await context.github.repos.listBranches(tempRequestObject)).data
+  const branches = (await octokit.rest.repos.listBranches(tempRequestObject)).data
   let mergeListHead = []
   let mergeListBase = []
   let mergeLists = []
@@ -96,7 +96,7 @@ async function cascadingBranchMerge(
       // CREATE a PR for the next subsequent merge
       // -----------------------------------------------------------------------------------------------------------------
       try {
-        res = await context.github.pulls.create({
+        res = await octokit.rest.pulls.create({
           owner: repository.owner,
           repo: repository.repo,
           base: mergeList[i + 1],
@@ -111,7 +111,7 @@ async function cascadingBranchMerge(
 
         if (error.status === 422 && error.errors[0].message.startsWith('No commits between')) {
           // create a comment in the HEAD Branch PR
-          await context.github.issues.createComment({
+          await octokit.rest.issues.createComment({
             owner: repository.owner,
             repo: repository.repo,
             issue_number: pullNumber,
@@ -122,7 +122,7 @@ async function cascadingBranchMerge(
         }
         else if (error.status === 422 && error.errors[0].message.startsWith('A pull request already exists')) {
           // put a comment in the original PR, noting that the cascading failed
-          await context.github.issues.createComment({
+          await octokit.rest.issues.createComment({
             owner: repository.owner,
             repo: repository.repo,
             issue_number: pullNumber,
@@ -132,14 +132,14 @@ async function cascadingBranchMerge(
         }
         else {
           // put a comment in the original PR, noting that the cascading failed
-          await context.github.issues.createComment({
+          await octokit.rest.issues.createComment({
             owner: repository.owner,
             repo: repository.repo,
             issue_number: pullNumber,
             body: "Tried to create a cascading PR but encountered an issue [" + error.errors[0].message + "]"
           })
           // create an Issue in the Repo. that the cascading failed
-          await context.github.issues.create({
+          await octokit.rest.issues.create({
             owner: repository.owner,
             repo: repository.repo,
             title: "Problem with cascading Auto-Merge [ " + error.errors[0].message + "]",
@@ -151,7 +151,7 @@ async function cascadingBranchMerge(
       }
 
       // create a comment in the HEAD Branch PR
-      await context.github.issues.createComment({
+      await octokit.rest.issues.createComment({
         owner: repository.owner,
         repo: repository.repo,
         issue_number: pullNumber,
@@ -162,7 +162,7 @@ async function cascadingBranchMerge(
       // MERGE the PR
       // -----------------------------------------------------------------------------------------------------------------
       try {
-        await context.github.pulls.merge({
+        await octokit.rest.pulls.merge({
           owner: repository.owner,
           repo: repository.repo,
           pull_number: res.data.number
@@ -173,14 +173,14 @@ async function cascadingBranchMerge(
 
         if (error.status === 405) {
           // put a comment in the original PR, noting that the cascading failed
-          await context.github.issues.createComment({
+          await octokit.rest.issues.createComment({
             owner: repository.owner,
             repo: repository.repo,
             issue_number: pullNumber,
             body: "Could not auto merge PR #" + res.data.number + ". Possible merge conflict"
           })
           // create an Issue to notify Repo users
-          await context.github.issues.create({
+          await octokit.rest.issues.create({
             owner: repository.owner,
             repo: repository.repo,
             title: "Problem with cascading Auto-Merge [ mergable:" + error.mergable + " ]",
@@ -190,7 +190,7 @@ async function cascadingBranchMerge(
           break
         }
         else {
-          await context.github.issues.create({
+          await octokit.rest.issues.create({
             owner: repository.owner,
             repo: repository.repo,
             title: "Problem with cascading Auto-Merge [ " + error.errors[0].message + " ]",
@@ -208,7 +208,7 @@ async function cascadingBranchMerge(
   let ref
   if (refBranch.length > 0) {
     try {
-      ref = await context.github.pulls.create({
+      ref = await octokit.rest.pulls.create({
         owner: repository.owner,
         repo: repository.repo,
         base: refBranch,
@@ -218,7 +218,7 @@ async function cascadingBranchMerge(
       })
 
       // create a comment in the HEAD Branch PR
-      await context.github.issues.createComment({
+      await octokit.rest.issues.createComment({
         owner: repository.owner,
         repo: repository.repo,
         issue_number: pullNumber,
@@ -226,7 +226,7 @@ async function cascadingBranchMerge(
       })
 
       // MERGE the PR
-      await context.github.pulls.merge({
+      await octokit.rest.pulls.merge({
         owner: repository.owner,
         repo: repository.repo,
         pull_number: ref.data.number
@@ -237,14 +237,14 @@ async function cascadingBranchMerge(
       console.error(error)
       if (error.status === 405) {
         // put a comment in the original PR, noting that merging failed
-        await context.github.issues.createComment({
+        await octokit.rest.issues.createComment({
           owner: repository.owner,
           repo: repository.repo,
           issue_number: pullNumber,
           body: "Could not auto merge PR #" + ref.data.number + ". Possible merge conflict"
         })
         // create an Issue to notify Repo users
-        await context.github.issues.create({
+        await octokit.rest.issues.create({
           owner: repository.owner,
           repo: repository.repo,
           title: "Problem with cascading Auto-Merge [ mergable:" + error.mergable + " ]",
@@ -253,7 +253,7 @@ async function cascadingBranchMerge(
       }
       else {
         // create a comment in the HEAD Branch PR
-        await context.github.issues.createComment({
+        await octokit.rest.issues.createComment({
           owner: repository.owner,
           repo: repository.repo,
           issue_number: pullNumber,
