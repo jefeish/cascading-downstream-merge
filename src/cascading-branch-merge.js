@@ -42,7 +42,9 @@ async function cascadingBranchMerge(
     octokit,
     pullNumber
 ) {
-  const tempRequestObject = { repository, per_page: 100 } 
+  const owner = repository.owner
+  const repo = repository.repo
+  const tempRequestObject = { owner, repo, per_page: 100 } 
   const branches = (await octokit.rest.repos.listBranches(tempRequestObject)).data
   let mergeListHead = []
   let mergeListBase = []
