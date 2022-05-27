@@ -17,27 +17,36 @@ const github = require('@actions/github');
         const context = github.context
         const owner = github.context.repo.owner
         const repo = github.context.repo.repo
+        const pullNumber = context.payload.pull_request.number
+        const headBranch = context.payload.pull_request.head.ref
+        const baseBranch = context.payload.pull_request.base.ref
 
+        console.log('GITHUB_TOKEN: ' + token)
         console.log('owner: ' + owner)
         console.log('repo: ' + repo)
-        console.log('GITHUB_TOKEN: ' + token)
         console.log('prefixes: ' + prefixes)
         console.log('refBranch: ' + refBranch)
+        console.log('pullNumber: ' + pullNumber)
+        console.log('headBranch: ' + headBranch)
+        console.log('baseBranch: ' + baseBranch)
+        console.log('mergeable: ' + context.payload.pull_request.mergeable)
+        console.log('mergeable_state: ' + context.payload.pull_request.mergeable_state)
+        
         console.log(checkMergability(1, 2))
         console.log(context)
-        const res = await getPullRequest(1, owner, repo, octokit)
+        const res = await getPullRequest(pullNumber, owner, repo, octokit)
         console.log(res)
 
-        // cascadingBranchMerge(
-        //     prefixes,
-        //     refBranch,
-        //     headBranch,
-        //     baseBranch,
-        //     owner,
-        //     repo,
-        //     context,
-        //     pullNumber
-        // )
+        cascadingBranchMerge(
+            prefixes,        // array of prefixes
+            refBranch,
+            headBranch,
+            baseBranch,
+            owner,
+            repo,
+            context,
+            pullNumber
+        )
         
     } catch (e) {
         console.log(e)
