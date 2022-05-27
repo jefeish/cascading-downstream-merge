@@ -1,14 +1,3 @@
-
-// RepositoryReference {
-//     owner
-//     repo
-// }
- 
-// HandlerContext {
-//     log: Context['log'],
-//     github: Context['github']
-//     config: Config
-// }
   
 /**
  * @description This class contains the main "Cascading Auto-Merge" code.
@@ -42,7 +31,7 @@ let branch = {
  * @param refBranch
  * @param headBranch
  * @param repository
- * @param context
+ * @param octokit
  */
 async function cascadingBranchMerge(
     prefixes,
@@ -51,7 +40,7 @@ async function cascadingBranchMerge(
     baseBranch,
     owner,
     repo,
-    context,
+    octokit,
     pullNumber
 ) {
   const tempRequestObject = { owner, repo, per_page: 100 } 
