@@ -35,6 +35,7 @@ const github = require('@actions/github');
         console.log(checkMergability(1, 2))
         console.log(context)
         const res = await getPullRequest(pullNumber, owner, repo, octokit)
+        console.log('res: '+ res)
         console.log('mergeable: '+ res.data.mergeable)
         console.log('mergeable_state: '+ res.data.mergeable_state)
 
