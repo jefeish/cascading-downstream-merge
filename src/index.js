@@ -24,6 +24,7 @@ const github = require('@actions/github');
         console.log('prefixes: ' + prefixes)
         console.log('refBranch: ' + refBranch)
         console.log(checkMergability(1, 2))
+        console.log(context)
         const res = await getPullRequest(1, owner, repo, octokit)
         console.log(res)
 
