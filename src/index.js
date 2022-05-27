@@ -31,11 +31,12 @@ const github = require('@actions/github');
         console.log('baseBranch: ' + baseBranch)
         console.log('mergeable: ' + context.payload.pull_request.mergeable)
         console.log('mergeable_state: ' + context.payload.pull_request.mergeable_state)
-        
+
         console.log(checkMergability(1, 2))
         console.log(context)
         const res = await getPullRequest(pullNumber, owner, repo, octokit)
-        console.log(res)
+        console.log('mergeable: '+ res.data.mergeable)
+        console.log('mergeable_state: '+ res.data.mergeable_state)
 
         cascadingBranchMerge(
             prefixes,        // array of prefixes

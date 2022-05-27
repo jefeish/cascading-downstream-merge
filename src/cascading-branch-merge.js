@@ -389,4 +389,6 @@ function semanticVersionToArray(vStr) {
 }
 
 
-module.exports = cascadingBranchMerge
+module.exports = {
+  cascadingBranchMerge
+}
