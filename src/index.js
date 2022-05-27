@@ -40,13 +40,12 @@ const github = require('@actions/github');
             "owner": owner,
             "repo": repo
         }
-        
+
         cascadingBranchMerge(
             [prefixes],        // array of prefixes
             refBranch,
             headBranch,
             baseBranch,
-            owner,
             repository,
             octokit,
             pullNumber
