@@ -4,16 +4,19 @@ name: GitHub Actions Demo
 
 on:
   workflow_dispatch:
-      inputs:
-        prefixes:
-          type: string
-          description: "List of prefixes to match"
-          required: true
+    inputs:
+      prefixes:
+        type: string
+        description: List of prefixes to match
+        required: true
 
-        refBranch:
-          type: string
-          description: branch to use for the template
-          required: true
+      refBranch:
+        type: string
+        description: branch to use for the template
+        required: true
+
+  pull_request:
+    types: [opened, reopened]
 
 jobs:
   merge:
