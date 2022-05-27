@@ -38,8 +38,7 @@ async function cascadingBranchMerge(
     refBranch,
     headBranch,
     baseBranch,
-    owner,
-    repo,
+    repository,
     octokit,
     pullNumber
 ) {
