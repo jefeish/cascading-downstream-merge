@@ -15,7 +15,7 @@ on:
 #         required: true
 
   pull_request:
-    types: [closed]
+    types: [opened,reopened]
 
 jobs:
   merge:
