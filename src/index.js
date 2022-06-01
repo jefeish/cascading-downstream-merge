@@ -18,10 +18,13 @@ const github = require('@actions/github');
         const owner = github.context.repo.owner
         const repo = github.context.repo.repo
 //         const pullNumber = context.payload.pull_request.number
-        const pullNumber = core.getInput("pullNumber")
-        const headBranch = context.payload.pull_request.head.ref
-        const baseBranch = context.payload.pull_request.base.ref
+//         const headBranch = context.payload.pull_request.head.ref
+//         const baseBranch = context.payload.pull_request.base.ref
 
+        const pullNumber = core.getInput("pullNumber")
+        const headBranch = 'release/1.1'
+        const baseBranch = 'jefeish-patch-3'
+        
         console.log('GITHUB_TOKEN: ' + token)
         console.log('owner: ' + owner)
         console.log('repo: ' + repo)
