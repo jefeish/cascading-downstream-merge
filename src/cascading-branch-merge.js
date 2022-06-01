@@ -270,6 +270,10 @@ async function cascadingBranchMerge(
  * @param branches
  */
 function getBranchMergeOrder(prefix, headBranch, branches) {
+  console.log('prefix: '+ prefix)
+  console.log('headBranch: '+ headBranch)
+  console.log('branches: '+ util.inspect(branches))
+  
   let branchList = []
   // create a list from the 'branches' array, containing only branch names
   branches.forEach(function (branch) {
