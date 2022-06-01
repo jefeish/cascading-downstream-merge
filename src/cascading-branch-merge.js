@@ -49,6 +49,8 @@ async function cascadingBranchMerge(
     per_page: 100
   }).data;
 
+  console.log('branches: ', branches)
+      
   let mergeListHead = []
   let mergeListBase = []
   let mergeLists = []
@@ -270,9 +272,9 @@ async function cascadingBranchMerge(
  * @param branches
  */
 function getBranchMergeOrder(prefix, headBranch, branches) {
-  console.log('prefix: '+ prefix)
-  console.log('headBranch: '+ headBranch)
-  console.log('branches: '+ branches)
+  console.log('prefix: ', prefix)
+  console.log('headBranch: ', headBranch)
+  console.log('branches: ', branches)
   
   let branchList = []
   // create a list from the 'branches' array, containing only branch names
