@@ -17,7 +17,8 @@ const github = require('@actions/github');
         const context = github.context
         const owner = github.context.repo.owner
         const repo = github.context.repo.repo
-        const pullNumber = core.getInput("pullNumber") ?  core.getInput("pullNumber") : context.payload.pull_request.number
+//         const pullNumber = context.payload.pull_request.number
+        const pullNumber = core.getInput("pullNumber")
         const headBranch = context.payload.pull_request.head.ref
         const baseBranch = context.payload.pull_request.base.ref
 
