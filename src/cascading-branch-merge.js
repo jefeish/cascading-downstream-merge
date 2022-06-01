@@ -57,6 +57,7 @@ async function cascadingBranchMerge(
   }
   catch(e)
   {
+    console.log('Error getting branches for Repo')
     console.log(e)
   }
       
