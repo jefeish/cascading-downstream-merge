@@ -2,12 +2,15 @@ name: "Csscading Auto-Merge Action"
 description: "GitHub action to automatically merge downstream branches based on semantic versioning"
 
 inputs:
-  GITHUB_TOKEN:
-    description: 'GitHub token'
+  prefixes:
+    description: 'prefixes'
     required: true
-  branchName:
-    description: 'branchName'
+  refBranch:
+    description: 'refBranch'
     required: true
+  pullNumber:
+    description: 'pullNumber'
+    required: true  
     
 runs:
   using: node12
