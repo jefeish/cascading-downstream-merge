@@ -22,8 +22,8 @@ const github = require('@actions/github');
 //         const baseBranch = context.payload.pull_request.base.ref
 
         const pullNumber = core.getInput("pullNumber")
-        const headBranch = 'release/1.1'
-        const baseBranch = 'jefeish-patch-3'
+        const headBranch = 'jefeish-patch-3'
+        const baseBranch = 'release/1.1'
         
         console.log('GITHUB_TOKEN: ' + token)
         console.log('owner: ' + owner)
