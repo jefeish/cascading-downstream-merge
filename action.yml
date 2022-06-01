@@ -2,6 +2,9 @@ name: "Csscading Auto-Merge Action"
 description: "GitHub action to automatically merge downstream branches based on semantic versioning"
 
 inputs:
+  GITHUB_TOKEN:
+    description: 'token'
+    required: true
   prefixes:
     description: 'prefixes'
     required: true
