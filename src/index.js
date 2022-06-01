@@ -3,7 +3,6 @@ const { cascadingBranchMerge } = require('./cascading-branch-merge')
 
 const core = require('@actions/core');
 const github = require('@actions/github');
-const util = require('util')
 
 /**
  * @description Entrypoint
