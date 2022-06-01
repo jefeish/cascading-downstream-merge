@@ -13,7 +13,11 @@ on:
         type: string
         description: branch to use for the template
         required: true
-
+        
+      pullNumber:
+        description: PR number for testing
+        required: true
+        
   pull_request:
     types: [opened, reopened]
 
@@ -35,5 +39,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           prefixes: ${{ github.event.inputs.prefixes }}
           refBranch: ${{ github.event.inputs.refBranch }}
+          pullNumber: ${{ github.event.inputs.pullNumber }}
 #           prefixes: '["feature","release"]'
 #           refBranch: development
