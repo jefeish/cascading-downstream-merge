@@ -46,11 +46,13 @@ async function cascadingBranchMerge(
   console.log('repository.owner: ', repository.owner)
   console.log('repository.repo: ', repository.repo)
       
-  const branches = await octokit.rest.repos.listBranches({
-    owner: repository.owner,
-    repo: repository.repo,
-    per_page: 100
-  }).data;
+  const tempRequestObject = { owner: repository.owner, repo: repository.repo, per_page: 1000 } // not sure if '1000' works, or maybe it stops at '100' by default
+  const branches = (await context.github.repos.listBranches(tempRequestObject)).data
+//   const branches = await octokit.rest.repos.listBranches({
+//     owner: repository.owner,
+//     repo: repository.repo,
+//     per_page: 100
+//   }).data;
 
   console.log('branches: ', branches)
       
