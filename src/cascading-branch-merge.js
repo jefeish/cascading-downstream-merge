@@ -43,6 +43,9 @@ async function cascadingBranchMerge(
     pullNumber
 ) {
 
+  console.log('repository.owner: ', repository.owner)
+  console.log('repository.repo: ', repository.repo)
+      
   const branches = await octokit.rest.repos.listBranches({
     owner: repository.owner,
     repo: repository.repo,
