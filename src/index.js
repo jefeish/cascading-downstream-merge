@@ -20,7 +20,7 @@ const github = require('@actions/github');
 //         const pullNumber = context.payload.pull_request.number
 //         const headBranch = context.payload.pull_request.head.ref
 //         const baseBranch = context.payload.pull_request.base.ref
-
+        console.log('phase 1')
         const pullNumber = core.getInput("pullNumber")
         const headBranch = 'jefeish-patch-3'
         const baseBranch = 'release/1.1'
