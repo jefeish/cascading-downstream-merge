@@ -68,6 +68,49 @@ function formatErrorDetails(error: any): string {
   return lines.join('\n')
 }
 
+function escapeTableCell(value: string): string {
+  return value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+}
+
+function formatMergeFailureComment(
+  owner: string,
+  repo: string,
+  mergePrNumber: number,
+  sourceBranch: string,
+  targetBranch: string,
+  error: any
+): string {
+  const status = String(error?.status ?? error?.response?.status ?? 'Unknown')
+  const message = getErrorMessage(error)
+  const details = getErrorList(error).join(' | ')
+  const docsUrl = error?.response?.data?.documentation_url
+
+  const lines = [
+    '# ❗ Merge Conflict with Cascading Auto-Merge',
+    '',
+    `Issue with cascading auto-merge while merging PR [#${mergePrNumber}](https://github.com/${owner}/${repo}/pull/${mergePrNumber}).`,
+    '',
+    `Source branch: **${sourceBranch}**`,
+    `Target branch: **${targetBranch}**`,
+    '',
+    '**Cascading Auto-Merge has been stopped!**',
+    '',
+    '**Error Details**',
+    '',
+    '| Status | Message | Details |',
+    '|---|---|---|',
+    `| ${escapeTableCell(status)} | ${escapeTableCell(message)} | ${escapeTableCell(details || 'N/A')} |`,
+    docsUrl ? '' : undefined,
+    docsUrl ? `> Documentation: ${docsUrl}` : undefined,
+    docsUrl ? '' : undefined,
+    'Please review and resolve the reported problem.',
+    '',
+    "Can't continue auto-merge action."
+  ].filter((line): line is string => line !== undefined)
+
+  return lines.join('\n')
+}
+
 /**
  * Merges all release branches by ascending order of their semantic version.
  *
@@ -223,7 +266,14 @@ export async function cascadingBranchMerge(
             owner,
             repo,
             issue_number: pullNumber,
-            body: `:heavy_exclamation_mark: Could not auto merge PR #${res!.data.number}.\n\n${errorSummary}\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
+            body: `${formatMergeFailureComment(
+              owner,
+              repo,
+              res!.data.number,
+              mergeList[i],
+              mergeList[i + 1],
+              error
+            )}\n\nCreated an issue #${issue.data.number}.`
           })
 
           success = false

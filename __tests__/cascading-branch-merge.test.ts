@@ -469,12 +469,12 @@ describe('Cascading Branch Merge', () => {
       )
     })
 
-    expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
+    expect(mocktokit.rest.issues.createComment).toHaveBeenNthCalledWith(2, {
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: 1,
       body: expect.stringMatching(
-        /.*Could not auto merge PR #13\..*GitHub API error 405: Merge conflict.*/s
+        /# ❗ Merge Conflict with Cascading Auto-Merge.*Issue with cascading auto-merge while merging PR \[#13\]\(https:\/\/github.com\/ActionsDesk\/cascading-downstream-merge\/pull\/13\)\..*Source branch: \*\*release\/2.0\*\*.*Target branch: \*\*develop\*\*.*\| 405 \| Merge conflict \| Merge conflict \|.*Please review and resolve the reported problem\..*Created an issue #1\./s
       )
     })
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
