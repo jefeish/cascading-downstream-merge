@@ -55,22 +55,14 @@ function formatErrorDetails(error: any): string {
   const status = error?.status ?? error?.response?.status
   const message = getErrorMessage(error)
   const details = getErrorList(error)
-  const requestId = error?.response?.headers?.['x-github-request-id']
   const docsUrl = error?.response?.data?.documentation_url
-  const responseData = safeStringify(error?.response?.data)
 
   const lines = [
     '### Error Details',
     `- Status: ${status ?? 'Unknown'}`,
     `- Message: ${message}`,
     details.length > 0 ? `- Errors: ${details.join(' | ')}` : undefined,
-    requestId ? `- GitHub Request ID: ${requestId}` : undefined,
-    docsUrl ? `- Documentation: ${docsUrl}` : undefined,
-    '',
-    '#### Raw API response',
-    '```json',
-    responseData,
-    '```'
+    docsUrl ? `- Documentation: ${docsUrl}` : undefined
   ].filter((line): line is string => line !== undefined)
 
   return lines.join('\n')
@@ -224,7 +216,7 @@ export async function cascadingBranchMerge(
             assignees: [actor],
             title:
               ':heavy_exclamation_mark: Merge Conflict with Cascading Auto-Merge',
-            body: `Issue with cascading auto-merge while merging PR #${res!.data.number}.\n\nPlease review and resolve the reported problem (for example merge conflicts or repository rule violations).\n\nSource branch: __${mergeList[i]}__\nTarget branch: __${mergeList[i + 1]}__\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber}\n\n${errorDetails}`
+            body: `Issue with cascading auto-merge while merging PR #${res!.data.number}.\n\nSource branch: __${mergeList[i]}__\nTarget branch: __${mergeList[i + 1]}__\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber}\n\n${errorDetails}\n\nPlease review and resolve the reported problem.`
           })
 
           await octokit.rest.issues.createComment({

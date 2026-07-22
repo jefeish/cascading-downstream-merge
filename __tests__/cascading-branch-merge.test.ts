@@ -465,7 +465,7 @@ describe('Cascading Branch Merge', () => {
       assignees: ['handle'],
       title: expect.any(String),
       body: expect.stringMatching(
-        /.*PR #13\..*### Error Details.*#### Raw API response.*/s
+        /.*PR #13\..*### Error Details.*Please review and resolve the reported problem\./s
       )
     })
 
@@ -540,7 +540,7 @@ describe('Cascading Branch Merge', () => {
       assignees: ['handle'],
       title: expect.any(String),
       body: expect.stringMatching(
-        /^Issue with auto-merging a PR\..*### Error Details.*#### Raw API response/s
+        /^Issue with auto-merging a PR\..*### Error Details/s
       )
     })
 
