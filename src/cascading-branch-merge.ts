@@ -111,6 +111,24 @@ function formatMergeFailureComment(
   return lines.join('\n')
 }
 
+async function findExistingPullRequest(
+  owner: string,
+  repo: string,
+  sourceBranch: string,
+  targetBranch: string,
+  octokit: InstanceType<typeof Octokit>
+) {
+  const existingPulls = await octokit.rest.pulls.list({
+    owner,
+    repo,
+    state: 'open',
+    head: `${owner}:${sourceBranch}`,
+    base: targetBranch
+  })
+
+  return existingPulls.data[0]
+}
+
 /**
  * Merges all release branches by ascending order of their semantic version.
  *
@@ -201,11 +219,19 @@ export async function cascadingBranchMerge(
 
             continue
           } else if (message.startsWith('A pull request already exists')) {
+            const existingPull = await findExistingPullRequest(
+              owner,
+              repo,
+              mergeList[i],
+              mergeList[i + 1],
+              octokit
+            )
+
             await octokit.rest.issues.createComment({
               owner,
               repo,
               issue_number: pullNumber,
-              body: `:heavy_exclamation_mark: Tried to create a cascading PR to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__ but there is already a pull request open.\n\nCan't continue auto-merge action.`
+              body: `:heavy_exclamation_mark: Tried to create a cascading PR to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__ but there is already a pull request open.${existingPull ? `\n\nExisting PR: [#${existingPull.number}](${existingPull.html_url})` : ''}\n\nCan't continue auto-merge action.`
             })
 
             success = false

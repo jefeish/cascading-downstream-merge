@@ -44,6 +44,13 @@ describe('Cascading Branch Merge', () => {
       data: { number: 1 }
     } as Endpoints['POST /repos/{owner}/{repo}/pulls']['response'])
 
+    ;(mocktokit.rest.pulls.list as unknown as any).mockResolvedValue({
+      headers: {},
+      status: 200,
+      url: 'https://api.github.com/repos/ActionsDesk/cascading-downstream-merge/pulls',
+      data: []
+    } as unknown as Endpoints['GET /repos/{owner}/{repo}/pulls']['response'])
+
     mocktokit.rest.issues.create.mockResolvedValue({
       data: { number: 1 }
     } as Endpoints['POST /repos/{owner}/{repo}/issues']['response'])
@@ -249,6 +256,18 @@ describe('Cascading Branch Merge', () => {
     })
 
     mocktokit.rest.pulls.create.mockRejectedValue(error)
+    ;(mocktokit.rest.pulls.list as unknown as any).mockResolvedValueOnce({
+      headers: {},
+      status: 200,
+      url: 'https://api.github.com/repos/ActionsDesk/cascading-downstream-merge/pulls',
+      data: [
+        {
+          number: 99,
+          html_url:
+            'https://github.com/ActionsDesk/cascading-downstream-merge/pull/99'
+        }
+      ]
+    } as unknown as Endpoints['GET /repos/{owner}/{repo}/pulls']['response'])
 
     await cascadingBranchMerge.cascadingBranchMerge(
       ['release/'],
@@ -309,6 +328,18 @@ describe('Cascading Branch Merge', () => {
     })
 
     mocktokit.rest.pulls.create.mockRejectedValue(error)
+    ;(mocktokit.rest.pulls.list as unknown as any).mockResolvedValueOnce({
+      headers: {},
+      status: 200,
+      url: 'https://api.github.com/repos/ActionsDesk/cascading-downstream-merge/pulls',
+      data: [
+        {
+          number: 99,
+          html_url:
+            'https://github.com/ActionsDesk/cascading-downstream-merge/pull/99'
+        }
+      ]
+    } as unknown as Endpoints['GET /repos/{owner}/{repo}/pulls']['response'])
 
     await cascadingBranchMerge.cascadingBranchMerge(
       ['release/'],
@@ -324,12 +355,21 @@ describe('Cascading Branch Merge', () => {
     )
 
     expect(mocktokit.rest.pulls.create).toHaveBeenCalledTimes(1)
+    expect(mocktokit.rest.pulls.list).toHaveBeenCalledWith({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      state: 'open',
+      head: `${github.context.repo.owner}:release/1.0`,
+      base: 'release/1.1'
+    })
 
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: 1,
-      body: expect.stringMatching(/.*already a pull request open/)
+      body: expect.stringMatching(
+        /.*already a pull request open.*Existing PR: \[#99\]\(https:\/\/github.com\/ActionsDesk\/cascading-downstream-merge\/pull\/99\).*/s
+      )
     })
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
       owner: github.context.repo.owner,

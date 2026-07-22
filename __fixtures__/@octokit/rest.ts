@@ -23,6 +23,10 @@ export const rest = {
       jest.fn<
         () => Promise<Endpoints['POST /repos/{owner}/{repo}/pulls']['response']>
       >(),
+    list:
+      jest.fn<
+        () => Promise<Endpoints['GET /repos/{owner}/{repo}/pulls']['response']>
+      >(),
     merge:
       jest.fn<
         () => Promise<
