@@ -464,7 +464,9 @@ describe('Cascading Branch Merge', () => {
       repo: github.context.repo.repo,
       assignees: ['handle'],
       title: expect.any(String),
-      body: expect.stringMatching(/.*PR #13.*/)
+      body: expect.stringMatching(
+        /.*PR #13\..*### Error Details.*#### Raw API response.*/s
+      )
     })
 
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
@@ -472,7 +474,7 @@ describe('Cascading Branch Merge', () => {
       repo: github.context.repo.repo,
       issue_number: 1,
       body: expect.stringMatching(
-        /.*Could not auto merge PR #13 due to merge conflicts.*/
+        /.*Could not auto merge PR #13\..*GitHub API error 405: Merge conflict.*/s
       )
     })
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
@@ -537,7 +539,9 @@ describe('Cascading Branch Merge', () => {
       repo: github.context.repo.repo,
       assignees: ['handle'],
       title: expect.any(String),
-      body: expect.stringMatching(/^Issue with auto-merging a PR*/)
+      body: expect.stringMatching(
+        /^Issue with auto-merging a PR\..*### Error Details.*#### Raw API response/s
+      )
     })
 
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({

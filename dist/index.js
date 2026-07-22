@@ -34760,6 +34760,66 @@ const Octokit = Octokit$1.plugin(requestLog, legacyRestEndpointMethods, paginate
   }
 );
 
+function safeStringify(value) {
+    try {
+        return JSON.stringify(value, null, 2);
+    }
+    catch {
+        return String(value);
+    }
+}
+function getErrorMessage(error) {
+    const apiMessage = error?.response?.data?.message;
+    const message = typeof apiMessage === 'string' ? apiMessage : error?.message;
+    return message ?? 'Unknown error';
+}
+function getErrorList(error) {
+    const errors = error?.response?.data?.errors;
+    if (!Array.isArray(errors)) {
+        return [];
+    }
+    return errors.map((entry) => {
+        if (typeof entry === 'string') {
+            return entry;
+        }
+        if (entry && typeof entry === 'object' && 'message' in entry) {
+            const message = entry.message;
+            if (typeof message === 'string') {
+                return message;
+            }
+        }
+        return safeStringify(entry);
+    });
+}
+function formatErrorSummary(error) {
+    const status = error?.status ?? error?.response?.status;
+    const message = getErrorMessage(error);
+    const details = getErrorList(error);
+    const detailText = details.length > 0 ? ` (${details.join(' | ')})` : '';
+    return `GitHub API error${status ? ` ${status}` : ''}: ${message}${detailText}`;
+}
+function formatErrorDetails(error) {
+    const status = error?.status ?? error?.response?.status;
+    const message = getErrorMessage(error);
+    const details = getErrorList(error);
+    const requestId = error?.response?.headers?.['x-github-request-id'];
+    const docsUrl = error?.response?.data?.documentation_url;
+    const responseData = safeStringify(error?.response?.data);
+    const lines = [
+        '### Error Details',
+        `- Status: ${status ?? 'Unknown'}`,
+        `- Message: ${message}`,
+        details.length > 0 ? `- Errors: ${details.join(' | ')}` : undefined,
+        requestId ? `- GitHub Request ID: ${requestId}` : undefined,
+        docsUrl ? `- Documentation: ${docsUrl}` : undefined,
+        '',
+        '#### Raw API response',
+        '```json',
+        responseData,
+        '```'
+    ].filter((line) => line !== undefined);
+    return lines.join('\n');
+}
 /**
  * Merges all release branches by ascending order of their semantic version.
  *
@@ -34816,6 +34876,8 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
             catch (error) {
                 coreExports.error(error);
                 const message = error.response.data.errors[0].message;
+                const errorSummary = formatErrorSummary(error);
+                const errorDetails = formatErrorDetails(error);
                 if (error.status === 422) {
                     if (message.startsWith('No commits between')) {
                         await octokit.rest.issues.createComment({
@@ -34843,13 +34905,13 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
                         repo,
                         assignees: [actor],
                         title: ':heavy_exclamation_mark: Cascading Auto-Merge Failure',
-                        body: `Unknown issue when creating a PR to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__\n\nPlease try to resolve the issue.\n\n**Cascading Auto-Merge has been stopped!**\n\nError: "${JSON.stringify(error.response.data)}"`
+                        body: `Unknown issue when creating a PR to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__\n\nPlease try to resolve the issue.\n\n**Cascading Auto-Merge has been stopped!**\n\n${errorDetails}`
                     });
                     await octokit.rest.issues.createComment({
                         owner,
                         repo,
                         issue_number: pullNumber,
-                        body: `:heavy_exclamation_mark: Tried to create a cascading PR to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__ but encountered an issue.\n\nError: "${JSON.stringify(error.response.data)}"\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
+                        body: `:heavy_exclamation_mark: Tried to create a cascading PR to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__ but encountered an issue.\n\n${errorSummary}\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
                     });
                     success = false;
                     break;
@@ -34871,6 +34933,8 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
             }
             catch (error) {
                 coreExports.error(error);
+                const errorSummary = formatErrorSummary(error);
+                const errorDetails = formatErrorDetails(error);
                 if (error.status === 405) {
                     // Comment on the original PR, noting that the cascading failed
                     const issue = await octokit.rest.issues.create({
@@ -34878,13 +34942,13 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
                         repo,
                         assignees: [actor],
                         title: ':heavy_exclamation_mark: Merge Conflict with Cascading Auto-Merge',
-                        body: `Issue with cascading auto-merge, please try to resolve the merge conflicts.\n\nPR #${res.data.number}.\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber} \n\nError: ${JSON.stringify(error.response.data)}`
+                        body: `Issue with cascading auto-merge while merging PR #${res.data.number}.\n\nPlease review and resolve the reported problem (for example merge conflicts or repository rule violations).\n\nSource branch: __${mergeList[i]}__\nTarget branch: __${mergeList[i + 1]}__\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber}\n\n${errorDetails}`
                     });
                     await octokit.rest.issues.createComment({
                         owner,
                         repo,
                         issue_number: pullNumber,
-                        body: `:heavy_exclamation_mark: Could not auto merge PR #${res.data.number} due to merge conflicts.\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
+                        body: `:heavy_exclamation_mark: Could not auto merge PR #${res.data.number}.\n\n${errorSummary}\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
                     });
                     success = false;
                     break;
@@ -34895,13 +34959,13 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
                         repo,
                         assignees: [actor],
                         title: ':heavy_exclamation_mark: Problem with Cascading Auto-Merge.',
-                        body: `Issue with auto-merging a PR.\n\nPlease try to resolve the Issue.\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber}\n\nError: ${JSON.stringify(error.response.data)}`
+                        body: `Issue with auto-merging a PR.\n\nPlease try to resolve the issue.\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber}\n\nSource branch: __${mergeList[i]}__\nTarget branch: __${mergeList[i + 1]}__\n\n${errorDetails}`
                     });
                     await octokit.rest.issues.createComment({
                         owner,
                         repo,
                         issue_number: pullNumber,
-                        body: `:heavy_exclamation_mark: Tried merge PR #${res.data.number} to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__ but encountered an issue.\n\nError: "${JSON.stringify(error.response.data)}".\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
+                        body: `:heavy_exclamation_mark: Tried merge PR #${res.data.number} to merge __${mergeList[i]}__ into __${mergeList[i + 1]}__ but encountered an issue.\n\n${errorSummary}\n\nCreated an issue #${issue.data.number}.\n\nCan't continue auto-merge action.`
                     });
                     success = false;
                     break;
