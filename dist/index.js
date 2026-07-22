@@ -34815,10 +34815,16 @@ function formatErrorDetails(error) {
 function escapeTableCell(value) {
     return value.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 }
+function formatMessageTableCell(value) {
+    return value
+        .split('\n')
+        .map((line) => escapeTableCell(line.trim()))
+        .filter(Boolean)
+        .join('<br>');
+}
 function formatMergeFailureComment(owner, repo, mergePrNumber, sourceBranch, targetBranch, error) {
     const status = String(error?.status ?? error?.response?.status ?? 'Unknown');
     const message = getErrorMessage(error);
-    const details = getErrorList(error).join(' | ');
     const docsUrl = error?.response?.data?.documentation_url;
     const lines = [
         '# ❗ Merge Conflict with Cascading Auto-Merge',
@@ -34832,9 +34838,9 @@ function formatMergeFailureComment(owner, repo, mergePrNumber, sourceBranch, tar
         '',
         '**Error Details**',
         '',
-        '| Status | Message | Details |',
-        '|---|---|---|',
-        `| ${escapeTableCell(status)} | ${escapeTableCell(message)} | ${escapeTableCell(details || 'N/A')} |`,
+        '| Status | Message |',
+        '|---|---|',
+        `| ${escapeTableCell(status)} | ${formatMessageTableCell(message)} |`,
         docsUrl ? '' : undefined,
         docsUrl ? `> Documentation: ${docsUrl}` : undefined,
         docsUrl ? '' : undefined,

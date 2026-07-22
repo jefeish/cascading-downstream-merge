@@ -72,6 +72,14 @@ function escapeTableCell(value: string): string {
   return value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }
 
+function formatMessageTableCell(value: string): string {
+  return value
+    .split('\n')
+    .map((line) => escapeTableCell(line.trim()))
+    .filter(Boolean)
+    .join('<br>')
+}
+
 function formatMergeFailureComment(
   owner: string,
   repo: string,
@@ -82,7 +90,6 @@ function formatMergeFailureComment(
 ): string {
   const status = String(error?.status ?? error?.response?.status ?? 'Unknown')
   const message = getErrorMessage(error)
-  const details = getErrorList(error).join(' | ')
   const docsUrl = error?.response?.data?.documentation_url
 
   const lines = [
@@ -97,9 +104,9 @@ function formatMergeFailureComment(
     '',
     '**Error Details**',
     '',
-    '| Status | Message | Details |',
-    '|---|---|---|',
-    `| ${escapeTableCell(status)} | ${escapeTableCell(message)} | ${escapeTableCell(details || 'N/A')} |`,
+    '| Status | Message |',
+    '|---|---|',
+    `| ${escapeTableCell(status)} | ${formatMessageTableCell(message)} |`,
     docsUrl ? '' : undefined,
     docsUrl ? `> Documentation: ${docsUrl}` : undefined,
     docsUrl ? '' : undefined,

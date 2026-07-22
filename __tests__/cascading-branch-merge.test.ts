@@ -514,7 +514,7 @@ describe('Cascading Branch Merge', () => {
       repo: github.context.repo.repo,
       issue_number: 1,
       body: expect.stringMatching(
-        /# ❗ Merge Conflict with Cascading Auto-Merge.*Issue with cascading auto-merge while merging PR \[#13\]\(https:\/\/github.com\/ActionsDesk\/cascading-downstream-merge\/pull\/13\)\..*Source branch: \*\*release\/2.0\*\*.*Target branch: \*\*develop\*\*.*\| 405 \| Merge conflict \| Merge conflict \|.*Please review and resolve the reported problem\..*Created an issue #1\./s
+        /# ❗ Merge Conflict with Cascading Auto-Merge.*Issue with cascading auto-merge while merging PR \[#13\]\(https:\/\/github.com\/ActionsDesk\/cascading-downstream-merge\/pull\/13\)\..*Source branch: \*\*release\/2.0\*\*.*Target branch: \*\*develop\*\*.*\| Status \| Message \|.*\| 405 \| Merge conflict \|.*Please review and resolve the reported problem\..*Created an issue #1\./s
       )
     })
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledWith({
@@ -598,5 +598,61 @@ describe('Cascading Branch Merge', () => {
     })
 
     expect(mocktokit.rest.pulls.create).toHaveBeenCalledTimes(1)
+  })
+
+  it('Formats multiline API message readably in the PR comment table', async () => {
+    const error = new RequestError('Method Not Allowed', 405, {
+      request: {
+        method: 'POST',
+        url: 'https://api.github.com/merge',
+        body: {
+          bar: 'baz'
+        },
+        headers: {
+          authorization: 'token secret13'
+        }
+      },
+      response: {
+        status: 405,
+        url: 'https://api.github.com/merge',
+        headers: {
+          'x-github-request-id': '1:2:3:4'
+        },
+        data: {
+          message:
+            'Repository rule violations found\nAt least 1 approving review is required by reviewers with write access.',
+          documentation_url:
+            'https://docs.github.com/rest/pulls/pulls#merge-a-pull-request'
+        }
+      }
+    })
+
+    mocktokit.rest.pulls.merge.mockRejectedValue(error)
+
+    mocktokit.rest.pulls.create.mockResolvedValue({
+      data: { number: 14 }
+    } as Endpoints['POST /repos/{owner}/{repo}/pulls']['response'])
+
+    await cascadingBranchMerge.cascadingBranchMerge(
+      ['release/'],
+      'develop',
+      'my-feature',
+      'release/1.2',
+      github.context.repo.owner,
+      github.context.repo.repo,
+      mocktokit,
+      mocktokit,
+      1,
+      'handle'
+    )
+
+    expect(mocktokit.rest.issues.createComment).toHaveBeenNthCalledWith(2, {
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: 1,
+      body: expect.stringMatching(
+        /\| Status \| Message \|.*\| 405 \| Repository rule violations found<br>At least 1 approving review is required by reviewers with write access\. \|.*> Documentation: https:\/\/docs.github.com\/rest\/pulls\/pulls#merge-a-pull-request/s
+      )
+    })
   })
 })
