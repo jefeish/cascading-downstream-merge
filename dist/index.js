@@ -34878,7 +34878,7 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
                         repo,
                         assignees: [actor],
                         title: ':heavy_exclamation_mark: Merge Conflict with Cascading Auto-Merge',
-                        body: `Issue with cascading auto-merge, please try to resolve the merge conflicts.\n\nPR #${res.data.number}.\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber}`
+                        body: `Issue with cascading auto-merge, please try to resolve the merge conflicts.\n\nPR #${res.data.number}.\n\n**Cascading Auto-Merge has been stopped!**\n\nOriginating PR #${pullNumber} \n\nError: ${JSON.stringify(error.response.data)}`
                     });
                     await octokit.rest.issues.createComment({
                         owner,
