@@ -14,8 +14,10 @@ type GetRepositoryBranchesResponse = Endpoints['GET /repos/{owner}/{repo}/branch
  * @param mergeOctokit The octokit instance to merge with.
  * @param pullNumber The pull request number.
  * @param actor The actor of the pull request.
+ * @param originalMergeCommitMessage The original merged commit message.
+ * @param originalPullRequestTitle The original pull request title.
  */
-export declare function cascadingBranchMerge(prefixes: string[], refBranch: string, headBranch: string, baseBranch: string, owner: string, repo: string, octokit: InstanceType<typeof Octokit>, mergeOctokit: InstanceType<typeof Octokit>, pullNumber: number, actor: string): Promise<void>;
+export declare function cascadingBranchMerge(prefixes: string[], refBranch: string, headBranch: string, baseBranch: string, owner: string, repo: string, octokit: InstanceType<typeof Octokit>, mergeOctokit: InstanceType<typeof Octokit>, pullNumber: number, actor: string, originalMergeCommitMessage?: string, originalPullRequestTitle?: string): Promise<void>;
 /**
  * Filters repository branches that start with a specific prefix, followed by a
  * forward slash (e.g. `release/`) and return an ordered list.

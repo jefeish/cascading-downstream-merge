@@ -149,6 +149,8 @@ async function findExistingPullRequest(
  * @param mergeOctokit The octokit instance to merge with.
  * @param pullNumber The pull request number.
  * @param actor The actor of the pull request.
+ * @param originalMergeCommitMessage The original merged commit message.
+ * @param originalPullRequestTitle The original pull request title.
  */
 export async function cascadingBranchMerge(
   prefixes: string[],
@@ -160,7 +162,9 @@ export async function cascadingBranchMerge(
   octokit: InstanceType<typeof Octokit>,
   mergeOctokit: InstanceType<typeof Octokit>,
   pullNumber: number,
-  actor: string
+  actor: string,
+  originalMergeCommitMessage?: string,
+  originalPullRequestTitle?: string
 ) {
   let success = true
 
@@ -200,12 +204,16 @@ export async function cascadingBranchMerge(
 
       // Create a PR for the next merge.
       try {
+        const cascadingTitle = originalPullRequestTitle?.trim()
+          ? `Automatic merge: ${originalPullRequestTitle.trim()}`
+          : `Automatic merge from ${mergeList[i]} -> ${mergeList[i + 1]}`
+
         res = await octokit.rest.pulls.create({
           owner,
           repo,
           base: mergeList[i + 1],
           head: mergeList[i],
-          title: `Automatic merge from ${mergeList[i]} -> ${mergeList[i + 1]}`,
+          title: cascadingTitle,
           body: 'This PR was created automatically by the cascading downstream merge action.'
         })
       } catch (error: any) {
@@ -274,11 +282,32 @@ export async function cascadingBranchMerge(
 
       // Merge the PR
       try {
-        await mergeOctokit.rest.pulls.merge({
+        const mergeParams: {
+          owner: string
+          repo: string
+          pull_number: number
+          commit_title?: string
+          commit_message?: string
+        } = {
           owner,
           repo,
           pull_number: res!.data.number
-        })
+        }
+
+        if (originalMergeCommitMessage && originalMergeCommitMessage.trim()) {
+          const [title, ...bodyLines] = originalMergeCommitMessage.split('\n')
+          const commitTitle = title.trim()
+          const commitBody = bodyLines.join('\n').trim()
+
+          if (commitTitle) {
+            mergeParams.commit_title = commitTitle
+            if (commitBody) {
+              mergeParams.commit_message = commitBody
+            }
+          }
+        }
+
+        await mergeOctokit.rest.pulls.merge(mergeParams)
       } catch (error: any) {
         core.error(error)
         const errorSummary = formatErrorSummary(error)

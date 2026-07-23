@@ -35,6 +35,10 @@ export const rest = {
       >()
   },
   repos: {
+    getCommit:
+      jest.fn<
+        () => Promise<Endpoints['GET /repos/{owner}/{repo}/commits/{ref}']['response']>
+      >(),
     listBranches:
       jest.fn<
         () => Promise<

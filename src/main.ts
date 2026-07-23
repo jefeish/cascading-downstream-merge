@@ -16,6 +16,8 @@ export async function run() {
     github.context.payload.pull_request &&
     github.context.payload.pull_request.merged
   ) {
+    const owner = github.context.repo.owner
+    const repo = github.context.repo.repo
     const octokit = new Octokit({
       auth: githubToken,
       baseUrl: github.context.apiUrl
@@ -29,17 +31,44 @@ export async function run() {
     core.info(`Head Branch: ${github.context.payload.pull_request.head.ref}`)
     core.info(`Base Branch: ${github.context.payload.pull_request.base.ref}`)
 
+    const originalPullRequestTitle =
+      github.context.payload.pull_request.title?.trim() || undefined
+
+    let originalMergeCommitMessage: string | undefined
+    const mergeCommitSha = github.context.payload.pull_request.merge_commit_sha
+
+    if (mergeCommitSha) {
+      try {
+        const mergeCommit = await octokit.rest.repos.getCommit({
+          owner,
+          repo,
+          ref: mergeCommitSha
+        })
+        originalMergeCommitMessage = mergeCommit.data.commit.message
+      } catch (error) {
+        core.warning(
+          `Could not fetch original merge commit message from ${mergeCommitSha}: ${error}`
+        )
+      }
+    } else {
+      core.warning(
+        'No merge_commit_sha found on the pull request payload. Falling back to default merge commit message.'
+      )
+    }
+
     cascadingBranchMerge(
       prefixes,
       refBranch,
       github.context.payload.pull_request.head.ref,
       github.context.payload.pull_request.base.ref,
-      github.context.repo.owner,
-      github.context.repo.repo,
+      owner,
+      repo,
       octokit,
       mergeOctokit,
       github.context.payload.pull_request.number,
-      github.context.actor
+      github.context.actor,
+      originalMergeCommitMessage,
+      originalPullRequestTitle
     )
   }
 }

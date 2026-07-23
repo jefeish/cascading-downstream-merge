@@ -34873,8 +34873,10 @@ async function findExistingPullRequest(owner, repo, sourceBranch, targetBranch, 
  * @param mergeOctokit The octokit instance to merge with.
  * @param pullNumber The pull request number.
  * @param actor The actor of the pull request.
+ * @param originalMergeCommitMessage The original merged commit message.
+ * @param originalPullRequestTitle The original pull request title.
  */
-async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch, owner, repo, octokit, mergeOctokit, pullNumber, actor) {
+async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch, owner, repo, octokit, mergeOctokit, pullNumber, actor, originalMergeCommitMessage, originalPullRequestTitle) {
     let success = true;
     // Get all branches in the repository.
     const branches = await octokit.paginate(octokit.rest.repos.listBranches, {
@@ -34904,12 +34906,15 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
             let res;
             // Create a PR for the next merge.
             try {
+                const cascadingTitle = originalPullRequestTitle?.trim()
+                    ? `Automatic merge: ${originalPullRequestTitle.trim()}`
+                    : `Automatic merge from ${mergeList[i]} -> ${mergeList[i + 1]}`;
                 res = await octokit.rest.pulls.create({
                     owner,
                     repo,
                     base: mergeList[i + 1],
                     head: mergeList[i],
-                    title: `Automatic merge from ${mergeList[i]} -> ${mergeList[i + 1]}`,
+                    title: cascadingTitle,
                     body: 'This PR was created automatically by the cascading downstream merge action.'
                 });
             }
@@ -34966,11 +34971,23 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
             });
             // Merge the PR
             try {
-                await mergeOctokit.rest.pulls.merge({
+                const mergeParams = {
                     owner,
                     repo,
                     pull_number: res.data.number
-                });
+                };
+                if (originalMergeCommitMessage && originalMergeCommitMessage.trim()) {
+                    const [title, ...bodyLines] = originalMergeCommitMessage.split('\n');
+                    const commitTitle = title.trim();
+                    const commitBody = bodyLines.join('\n').trim();
+                    if (commitTitle) {
+                        mergeParams.commit_title = commitTitle;
+                        if (commitBody) {
+                            mergeParams.commit_message = commitBody;
+                        }
+                    }
+                }
+                await mergeOctokit.rest.pulls.merge(mergeParams);
             }
             catch (error) {
                 coreExports.error(error);
@@ -35124,6 +35141,8 @@ async function run() {
     coreExports.info(`Ref Branch: ${refBranch}`);
     if (githubExports.context.payload.pull_request &&
         githubExports.context.payload.pull_request.merged) {
+        const owner = githubExports.context.repo.owner;
+        const repo = githubExports.context.repo.repo;
         const octokit = new Octokit({
             auth: githubToken,
             baseUrl: githubExports.context.apiUrl
@@ -35134,7 +35153,26 @@ async function run() {
         coreExports.info(`PR Number: ${githubExports.context.payload.pull_request.number}`);
         coreExports.info(`Head Branch: ${githubExports.context.payload.pull_request.head.ref}`);
         coreExports.info(`Base Branch: ${githubExports.context.payload.pull_request.base.ref}`);
-        cascadingBranchMerge(prefixes, refBranch, githubExports.context.payload.pull_request.head.ref, githubExports.context.payload.pull_request.base.ref, githubExports.context.repo.owner, githubExports.context.repo.repo, octokit, mergeOctokit, githubExports.context.payload.pull_request.number, githubExports.context.actor);
+        const originalPullRequestTitle = githubExports.context.payload.pull_request.title?.trim() || undefined;
+        let originalMergeCommitMessage;
+        const mergeCommitSha = githubExports.context.payload.pull_request.merge_commit_sha;
+        if (mergeCommitSha) {
+            try {
+                const mergeCommit = await octokit.rest.repos.getCommit({
+                    owner,
+                    repo,
+                    ref: mergeCommitSha
+                });
+                originalMergeCommitMessage = mergeCommit.data.commit.message;
+            }
+            catch (error) {
+                coreExports.warning(`Could not fetch original merge commit message from ${mergeCommitSha}: ${error}`);
+            }
+        }
+        else {
+            coreExports.warning('No merge_commit_sha found on the pull request payload. Falling back to default merge commit message.');
+        }
+        cascadingBranchMerge(prefixes, refBranch, githubExports.context.payload.pull_request.head.ref, githubExports.context.payload.pull_request.base.ref, owner, repo, octokit, mergeOctokit, githubExports.context.payload.pull_request.number, githubExports.context.actor, originalMergeCommitMessage, originalPullRequestTitle);
     }
 }
 

@@ -71,7 +71,9 @@ describe('Cascading Branch Merge', () => {
       mocktokit,
       mocktokit,
       1,
-      github.context.actor
+      github.context.actor,
+      'JIRA-123 Preserve this\n\nAdditional details',
+      'Add test 3 to release notes - JIRA 1234'
     )
 
     expect(mocktokit.paginate).toHaveBeenCalledWith(
@@ -88,7 +90,7 @@ describe('Cascading Branch Merge', () => {
       repo: github.context.repo.repo,
       base: 'release/1.1',
       head: 'release/1.0',
-      title: expect.anything(),
+      title: 'Automatic merge: Add test 3 to release notes - JIRA 1234',
       body: expect.anything()
     })
     expect(mocktokit.rest.pulls.create).toHaveBeenNthCalledWith(2, {
@@ -160,8 +162,16 @@ describe('Cascading Branch Merge', () => {
       repo: github.context.repo.repo,
       base: 'develop',
       head: 'release/2.0',
-      title: expect.anything(),
+      title: 'Automatic merge: Add test 3 to release notes - JIRA 1234',
       body: expect.anything()
+    })
+
+    expect(mocktokit.rest.pulls.merge).toHaveBeenNthCalledWith(1, {
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      pull_number: 1,
+      commit_title: 'JIRA-123 Preserve this',
+      commit_message: 'Additional details'
     })
 
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledTimes(11)
@@ -653,6 +663,32 @@ describe('Cascading Branch Merge', () => {
       body: expect.stringMatching(
         /\| Status \| Message \|.*\| 405 \| Repository rule violations found<br>At least 1 approving review is required by reviewers with write access\. \|.*> Documentation: https:\/\/docs.github.com\/rest\/pulls\/pulls#merge-a-pull-request/s
       )
+    })
+  })
+
+  it('Falls back to branch-based title if original PR title is missing', async () => {
+    await cascadingBranchMerge.cascadingBranchMerge(
+      ['release/'],
+      'develop',
+      'my-feature',
+      'release/1.0',
+      github.context.repo.owner,
+      github.context.repo.repo,
+      mocktokit,
+      mocktokit,
+      1,
+      github.context.actor,
+      undefined,
+      undefined
+    )
+
+    expect(mocktokit.rest.pulls.create).toHaveBeenNthCalledWith(1, {
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      base: 'release/1.1',
+      head: 'release/1.0',
+      title: 'Automatic merge from release/1.0 -> release/1.1',
+      body: expect.anything()
     })
   })
 })

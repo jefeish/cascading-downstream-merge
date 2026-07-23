@@ -28,6 +28,17 @@ const main = await import('../src/main.js')
 
 describe('main', () => {
   beforeEach(() => {
+    github.context.payload.pull_request.merged = true
+    github.context.payload.pull_request.merge_commit_sha = 'abc123'
+
+    octokit.rest.repos.getCommit.mockResolvedValue({
+      data: {
+        commit: {
+          message: 'JIRA-123 Preserve this commit message\n\nAdditional context'
+        }
+      }
+    } as any)
+
     core.getInput
       .mockReset()
       .mockReturnValueOnce('MY_EXAMPLE_TOKEN') // github_token
@@ -45,6 +56,25 @@ describe('main', () => {
 
     expect(core.getInput).toHaveBeenCalledTimes(4)
     expect(cascadingBranchMergeMock).toHaveBeenCalledTimes(1)
+    expect(octokit.rest.repos.getCommit).toHaveBeenCalledWith({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      ref: 'abc123'
+    })
+    expect(cascadingBranchMergeMock).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.anything(),
+      expect.anything(),
+      expect.any(Number),
+      expect.any(String),
+      'JIRA-123 Preserve this commit message\n\nAdditional context',
+      'Add test 3 to release notes - JIRA 1234'
+    )
   })
 
   it('Does not create the merge Octokit instance', async () => {
@@ -68,5 +98,26 @@ describe('main', () => {
 
     expect(core.getInput).toHaveBeenCalledTimes(4)
     expect(cascadingBranchMergeMock).not.toHaveBeenCalled()
+  })
+
+  it('Falls back if merge commit message cannot be fetched', async () => {
+    octokit.rest.repos.getCommit.mockRejectedValue(new Error('not found'))
+
+    await main.run()
+
+    expect(cascadingBranchMergeMock).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.any(String),
+      expect.anything(),
+      expect.anything(),
+      expect.any(Number),
+      expect.any(String),
+      undefined,
+      'Add test 3 to release notes - JIRA 1234'
+    )
   })
 })

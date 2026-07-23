@@ -24,6 +24,8 @@ export const context = {
     pull_request: {
       merged: true,
       number: 1,
+      title: 'Add test 3 to release notes - JIRA 1234',
+      merge_commit_sha: 'abc123',
       head: {
         ref: 'head-ref'
       },
