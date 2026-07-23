@@ -170,7 +170,7 @@ describe('Cascading Branch Merge', () => {
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       pull_number: 1,
-      commit_title: 'JIRA-123 Preserve this',
+      commit_title: 'from PR #1: JIRA-123 Preserve this',
       commit_message: 'Additional details'
     })
 

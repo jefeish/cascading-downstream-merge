@@ -34981,7 +34981,7 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
                     const commitTitle = title.trim();
                     const commitBody = bodyLines.join('\n').trim();
                     if (commitTitle) {
-                        mergeParams.commit_title = commitTitle;
+                        mergeParams.commit_title = `from PR #${pullNumber}: ${commitTitle}`;
                         if (commitBody) {
                             mergeParams.commit_message = commitBody;
                         }
