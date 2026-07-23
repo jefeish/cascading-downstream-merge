@@ -170,8 +170,7 @@ describe('Cascading Branch Merge', () => {
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       pull_number: 1,
-      commit_title: 'from PR #1: JIRA-123 Preserve this',
-      commit_message: 'Additional details'
+      commit_title: 'from PR #1 - Add test 3 to release notes - JIRA 1234'
     })
 
     expect(mocktokit.rest.issues.createComment).toHaveBeenCalledTimes(11)

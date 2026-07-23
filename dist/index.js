@@ -34977,15 +34977,14 @@ async function cascadingBranchMerge(prefixes, refBranch, headBranch, baseBranch,
                     pull_number: res.data.number
                 };
                 if (originalMergeCommitMessage && originalMergeCommitMessage.trim()) {
-                    const [title, ...bodyLines] = originalMergeCommitMessage.split('\n');
+                    const [title] = originalMergeCommitMessage.split('\n');
                     const commitTitle = title.trim();
-                    const commitBody = bodyLines.join('\n').trim();
-                    if (commitTitle) {
-                        mergeParams.commit_title = `from PR #${pullNumber}: ${commitTitle}`;
-                        if (commitBody) {
-                            mergeParams.commit_message = commitBody;
-                        }
+                    if (!originalPullRequestTitle?.trim() && commitTitle) {
+                        mergeParams.commit_title = `from PR #${pullNumber} - ${commitTitle}`;
                     }
+                }
+                if (originalPullRequestTitle?.trim()) {
+                    mergeParams.commit_title = `from PR #${pullNumber} - ${originalPullRequestTitle.trim()}`;
                 }
                 await mergeOctokit.rest.pulls.merge(mergeParams);
             }
